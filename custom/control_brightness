@@ -1,0 +1,40 @@
+#!/bin/bash
+
+# Requires acpi and xbacklight:
+# sudo apt-get install acpi xbacklight
+
+POLLING_INTERVAL=3
+AC_BRIGHTNESS_PCT=100
+BATTERY_BRIGHTNESS_PCT=20
+
+# Where are the backlight settings? We'll assume there is only one subfolder
+BACKLIGHT_PATH=$(ls /sys/class/backlight)
+BACKLIGHT_PATH=/sys/class/backlight/$BACKLIGHT_PATH
+MAX_BRIGHTNESS=$(cat $BACKLIGHT_PATH/max_brightness)
+
+# Calculate actual backlight integer value
+AC_BRIGHTNESS=$(($MAX_BRIGHTNESS * $AC_BRIGHTNESS_PCT / 100))
+BATTERY_BRIGHTNESS=$(($MAX_BRIGHTNESS * $BATTERY_BRIGHTNESS_PCT / 100))
+LAST_AC_STATUS=-1
+
+while true
+do
+	AC_ADAPTER=$(/usr/bin/acpi -a | /bin/grep -c 'on-line' -)
+	#date +"%F %T    Status = $AC_ADAPTER"
+	if [ $LAST_AC_STATUS != $AC_ADAPTER ]
+	then
+		date +"%F %T    Status changed from $LAST_AC_STATUS to $AC_ADAPTER"
+		if [ $AC_ADAPTER == 1 ]
+		then
+			date +"%F %T    Setting display to AC brightness"
+			#/usr/bin/xbacklight -set $AC_BRIGHTNESS
+			bash -c "echo $AC_BRIGHTNESS > $BACKLIGHT_PATH/brightness"
+		else
+			date +"%F %T    Setting display to battery brightness"
+			#/usr/bin/xbacklight -set $BATTERY_BRIGHTNESS
+			bash -c "echo $BATTERY_BRIGHTNESS > $BACKLIGHT_PATH/brightness"
+		fi
+		LAST_AC_STATUS=$AC_ADAPTER
+	fi
+	sleep $POLLING_INTERVAL
+done

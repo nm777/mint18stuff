@@ -1,0 +1,9 @@
+[Unit]
+Description=Automatically adjust brightness when power is applied or removed
+After=syslog.target
+
+[Service]
+ExecStart=/usr/local/bin/control_brightness
+
+[Install]
+WantedBy=multi-user.target

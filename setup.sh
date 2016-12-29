@@ -31,8 +31,9 @@ sudo apt-get update && sudo apt-get install -y $TO_INSTALL
 
 # Set brightness to auto-adjust with power is connected/disconnected
 sudo ln -s ~/mint18stuff/custom/control_brightness /usr/local/bin/control_brightness
-sudo ln -s ~/mint18stuff/custom/brightness.service /etc/systemd/system/brightness.service
+sudo cp ~/mint18stuff/custom/brightness.service /etc/systemd/system/
 sudo chmod 644 /etc/systemd/system/brightness.service
+sudo systemctl enable brightness.service
 #sudo echo "setsid /usr/local/bin/control_brightness >/var/log/bc.log 2>&1 < /dev/null &" >> /etc/rc.local
 
 # Link files to the profile

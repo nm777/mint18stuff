@@ -51,3 +51,10 @@ function! ConvertDdlToLaravelMigration()
 	%s/NOT NULL,\=$/;/gi
 	%s/NULL,\=$/->nullable();/gi
 endfunc
+
+function! FormatSkyConversation()
+	g/\(AM\|PM\)$/-1j
+	g/^\s*$/d
+	%s/^\(.\{-} \d\d:\d\d \)\(AM\|PM\)/\r\1\2/gi
+	:1d
+endfunc

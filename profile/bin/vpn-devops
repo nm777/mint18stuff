@@ -1,1 +1,11 @@
+#!/bin/bash
+
+# Get user credentials
+sudo echo "Launching VPN client..."
+
+# Hidden VPN
+# Make sure sudo is authenticated
+#sudo nohup openvpn --up /etc/openvpn/update-resolv-conf --down /etc/openvpn/update-resolv-conf --config ~/Documents/client-autologin.ovpn --script-security 2 >/tmp/nohup.out 2>&1 &
+
+#Normal VPN - Foreground
 sudo openvpn --up /etc/openvpn/update-resolv-conf --down /etc/openvpn/update-resolv-conf --config ~/Documents/client-autologin.ovpn --script-security 2

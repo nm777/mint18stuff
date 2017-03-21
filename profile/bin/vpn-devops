@@ -1,11 +1,28 @@
 #!/bin/bash
 
+OVPN_CONFIG=~/.openvpn/client-autologin.ovpn
+
+# Am I on the home network?
+HOMENET=Home
+THISNET=`grep 'search' /etc/resolv.conf | awk '{print $2}'`
+ISHOME=0
+if [ "$HOMENET" == "$THISNET" ]
+then
+	ISHOME=1
+fi
+
 # Get user credentials
 sudo echo "Launching VPN client..."
 
+# Get ready to fix up resolv.conf
+if [ $ISHOME -eq 1 ]
+then
+	sleep 20 && echo "Updating resolv.conf" && sudo sed -i --follow-symlinks 's/nameserver 192\.168\.0\.1/nameserver 8.8.8.8/' /etc/resolv.conf &
+fi
 # Hidden VPN
 # Make sure sudo is authenticated
-#sudo nohup openvpn --up /etc/openvpn/update-resolv-conf --down /etc/openvpn/update-resolv-conf --config ~/Documents/client-autologin.ovpn --script-security 2 >/tmp/nohup.out 2>&1 &
+#sudo nohup openvpn --up /etc/openvpn/update-resolv-conf --down /etc/openvpn/update-resolv-conf --config $OVPN_CONFIG --script-security 2 >/tmp/nohup.out 2>&1 &
 
 #Normal VPN - Foreground
-sudo openvpn --up /etc/openvpn/update-resolv-conf --down /etc/openvpn/update-resolv-conf --config ~/Documents/client-autologin.ovpn --script-security 2
+sudo openvpn --up /etc/openvpn/update-resolv-conf --down /etc/openvpn/update-resolv-conf --config $OVPN_CONFIG --script-security 2 | sudo tee -a /var/log/openvpn.log
+

@@ -1,13 +1,20 @@
 execute pathogen#infect()
 color koehler
 syntax on
+
+" line indentation and tab spacing
 filetype indent on
+" show existing tab with 4 spaces width
+set tabstop=4
+" when indenting with '>', use 4 spaces width
+set shiftwidth=4
+" On pressing tab, insert 4 spaces
+set expandtab
+
 set ruler
 set laststatus=2
 set hlsearch
 set ignorecase
-set tabstop=4
-set shiftwidth=4
 set cursorline
 set wildmenu
 set lazyredraw

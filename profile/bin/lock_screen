@@ -1,0 +1,58 @@
+#!/bin/bash
+
+# Hack to change HipChat status to away when locking screen. This could be less
+# hacky by connecting to hipchat using the "--message" option. However, this
+# option only appears to support "about", "logout", "quit" and "wakeup"
+#
+# Tested in KDE (Kubuntu 16.10)
+#
+# Change HipChat status to away -> Lock screen -> Change HipChat status to
+# available after screen is unlocked
+#
+# Requires xdotool
+
+pid=$(pidof HipChat4)
+
+function lock_screen() {
+  qdbus org.kde.screensaver /ScreenSaver Lock
+}
+
+function change_hipchat_status() {
+  search="search --pid ${pid} --name HipChat"
+  status_active_x_offset="-40"
+  status_active_y_offset="20"
+  case "${1}" in
+    "available") status_offset="70";;
+    "away") status_offset="95";;
+    "dnd") status_offset="120";;
+    *) status_offset="95";;
+  esac
+  eval $(xdotool ${search} getwindowgeometry --shell)
+  if [ "${WIDTH}z" = "z" ]; then
+    echo "Could not get HipChat window geometry"
+  else
+    xdotool ${search} windowactivate \
+      mousemove --clearmodifiers $X $Y \
+      mousemove_relative --clearmodifiers ${WIDTH} 0 \
+      mousemove_relative --clearmodifiers --sync -- ${status_active_x_offset} ${status_active_y_offset} \
+      key --clearmodifiers --delay 50 Escape \
+      click --clearmodifiers 1 \
+      mousemove_relative --clearmodifiers --sync -- 0 ${status_offset} \
+      click --clearmodifiers 1 \
+      key --clearmodifiers --delay 50 Escape
+  fi
+}
+
+if [ "${pid}z" != "z" ]; then
+  change_hipchat_status away
+  lock_screen
+  dbus-monitor --session "type='signal',interface='org.freedesktop.ScreenSaver',path='/org/freedesktop/ScreenSaver'" |
+    while read x; do
+      if [ "${x}" = "boolean false" ]; then
+        change_hipchat_status available
+        exit 0
+      fi
+    done
+else
+  lock_screen
+fi

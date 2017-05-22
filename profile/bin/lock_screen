@@ -4,7 +4,7 @@
 # hacky by connecting to hipchat using the "--message" option. However, this
 # option only appears to support "about", "logout", "quit" and "wakeup"
 #
-# Tested in KDE (Kubuntu 16.10)
+# Tested in Mint 18.1 (Ubuntu 16.04) Cinnamon Desktop
 #
 # Change HipChat status to away -> Lock screen -> Change HipChat status to
 # available after screen is unlocked
@@ -14,34 +14,50 @@
 pid=$(pidof HipChat4)
 
 function lock_screen() {
+    echo "$(date +%c): Lock screen and wait for login"
+
+    # Cinnamon Desktop
     cinnamon-screensaver-command -l
+
+    # Gnome Desktop
+    gnome-screensaver-command -l
 }
 
 function change_hipchat_status() {
-    # Put spaces between the characters
+    # Hipchat commands being with a forward slash
     COMMAND="slash"
+
+    # Put spaces between the characters
     for x in $(echo ${1} | grep -o .); do
         COMMAND="$COMMAND $x"
     done
     COMMAND="$COMMAND KP_Enter"
-    echo "'$COMMAND'"
+    echo "$(date +%c): '$COMMAND'"
+
+    # Send the command to the HipChat window
     xdotool search --name HipChat windowfocus key $COMMAND
 }
 
 if [ "${pid}z" != "z" ]; then
+    # When the script is launched, send the /away command and lock the screen
+    echo "$(date +%c): Launching"
     change_hipchat_status away
     lock_screen
 
+    # Monitor the DBus for a screen unlock
     # Example DBus message:
     # signal time=1495310079.829721 sender=:1.1 -> destination=(null destination) serial=11004 path=/org/gnome/SessionManager/Presence; interface=org.gnome.SessionManager.Presence; member=StatusChanged
     #     uint32 0
-    dbus-monitor --session "type='signal',interface='org.gnome.SessionManager.Presence',member='StatusChanged'," |
-        while read x; do
-            if [ "${x}" = "uint32 0" ]; then
-                change_hipchat_status here
-                exit 0
-            fi
-        done
+    while read x; do
+        if [ "${x}" = "uint32 0" ]; then
+            change_hipchat_status here
+            echo "$(date +%c): Now break out!"
+            break
+        fi
+    done < <(dbus-monitor --session "type='signal',interface='org.gnome.SessionManager.Presence',member='StatusChanged'")
+
+    echo "$(date +%c): Terminating"
+    exit 0
 else
     lock_screen
 fi

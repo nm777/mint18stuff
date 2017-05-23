@@ -11,9 +11,7 @@
 #
 # Requires xdotool
 
-pid=$(pidof HipChat4)
-
-function lock_screen() {
+function lock() {
     echo "$(date +%c): Lock screen and wait for login"
 
     # Cinnamon Desktop
@@ -38,26 +36,24 @@ function change_hipchat_status() {
     xdotool search --name HipChat windowfocus key $COMMAND
 }
 
-if [ "${pid}z" != "z" ]; then
-    # When the script is launched, send the /away command and lock the screen
-    echo "$(date +%c): Launching"
-    change_hipchat_status away
-    lock_screen
+# When the script is launched, send the /away command and lock the screen
+echo "$(date +%c): Launching"
+sleep 0.5
+xdotool getactivewindow windowminimize
+change_hipchat_status away
+lock
 
-    # Monitor the DBus for a screen unlock
-    # Example DBus message:
-    # signal time=1495310079.829721 sender=:1.1 -> destination=(null destination) serial=11004 path=/org/gnome/SessionManager/Presence; interface=org.gnome.SessionManager.Presence; member=StatusChanged
-    #     uint32 0
-    while read x; do
-        if [ "${x}" = "uint32 0" ]; then
-            change_hipchat_status here
-            echo "$(date +%c): Now break out!"
-            break
-        fi
-    done < <(dbus-monitor --session "type='signal',interface='org.gnome.SessionManager.Presence',member='StatusChanged'")
+# Monitor the DBus for a screen unlock
+# Example DBus message:
+# signal time=1495310079.829721 sender=:1.1 -> destination=(null destination) serial=11004 path=/org/gnome/SessionManager/Presence; interface=org.gnome.SessionManager.Presence; member=StatusChanged
+#     uint32 0
+while read x; do
+    if [ "${x}" = "uint32 0" ]; then
+        change_hipchat_status here
+        echo "$(date +%c): Now break out!"
+        break
+    fi
+done < <(dbus-monitor --session "type='signal',interface='org.gnome.SessionManager.Presence',member='StatusChanged'")
 
-    echo "$(date +%c): Terminating"
-    exit 0
-else
-    lock_screen
-fi
+echo "$(date +%c): Terminating"
+exit 0

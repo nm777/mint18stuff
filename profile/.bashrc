@@ -124,12 +124,17 @@ if [ -x /usr/bin/mint-fortune ]; then
      /usr/bin/mint-fortune
 fi
 
+# Custom settings
+# Enable keychain
+eval `keychain --eval id_rsa`
+
+# Set the command prompt
+parse_git_branch() { 
+    git branch 2> /dev/null | sed -e '/^[^*]/d' -e 's/* \(.*\)/ (\1)/' 
+} 
+
 PS1="\[\033]0;$TITLEPREFIX:${PWD//[^[:ascii:]]/?}\007\]\n\[\033[32m\]\u@\h \[\033[35m\]$MSYSTEM \[\033[33m\]\w\[\033[36m\]\$(parse_git_branch)\[\033[0m\]\n\[\033[32m\]└─ \$ ▶\[\033[0m\] "
 alias gs='git status'
 alias gaa='git add .'
 alias gc='git commit'
-
-parse_git_branch() { 
-    git branch 2> /dev/null | sed -e '/^[^*]/d' -e 's/* \(.*\)/ (\1)/' 
-} 
 

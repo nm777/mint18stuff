@@ -1,0 +1,3 @@
+#!@/bin/bash
+
+ssh marco-devops@10.255.3.47

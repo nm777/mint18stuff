@@ -63,10 +63,10 @@ cp -r -s $SCRIPTDIR/profile/. .
 
 function PromptYN {
 	while true; do
-		read -p "$1" yn
+		read -n 1 -p "$1" yn
 		case $yn in
 			[Yy]* ) eval $2; break;;
-			[Nn]* ) exit;;
+			[Nn]* ) return;;
 			* ) echo "Please answer yes or no.";;
 		esac
 	done

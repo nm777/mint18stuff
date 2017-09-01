@@ -36,3 +36,9 @@ shopt -s checkwinsize
 # match all files and zero or more directories and subdirectories.
 #shopt -s globstar
 
+# Enable Keychain http://www.funtoo.org/Keychain
+keychain_path=$(which keychain)
+if [ -x "$keychain_path" ] ; then
+    eval `keychain --eval id_rsa`
+fi
+

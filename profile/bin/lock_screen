@@ -35,7 +35,6 @@ function change_hipchat_status() {
         COMMAND="$COMMAND $x"
     done
     COMMAND="$COMMAND KP_Enter"
-    echo "$(date +%c): '$COMMAND'" | tee -a $LOG_FILE
 
     # If caps lock is on, temporarily turn it off
     CAPS_STATE=off
@@ -44,6 +43,7 @@ function change_hipchat_status() {
     if [ "$CAPS_STATE" == "on" ]; then toggle_caps; fi
 
     # Send the command to the HipChat window
+    echo "$(date +%c): Type '$COMMAND'" | tee -a $LOG_FILE
     xdotool search --name HipChat windowfocus key $COMMAND
 
     # Put caps lock back, if it was on before

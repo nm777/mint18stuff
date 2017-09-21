@@ -12,13 +12,18 @@
 # Requires xdotool
 
 function lock() {
-    echo "$(date +%c): Lock screen and wait for login"
+    echo "$(date +%c): Lock screen and wait for login" | tee -a $LOG_FILE
 
     # Cinnamon Desktop
     cinnamon-screensaver-command -l
 
     # Gnome Desktop
     gnome-screensaver-command -l
+}
+
+function toggle_caps() {
+    echo "$(date +%c): Toggle caps lock" | tee -a $LOG_FILE
+    xdotool key Caps_Lock
 }
 
 function change_hipchat_status() {
@@ -30,14 +35,26 @@ function change_hipchat_status() {
         COMMAND="$COMMAND $x"
     done
     COMMAND="$COMMAND KP_Enter"
-    echo "$(date +%c): '$COMMAND'"
+    echo "$(date +%c): '$COMMAND'" | tee -a $LOG_FILE
+
+    # If caps lock is on, temporarily turn it off
+    CAPS_STATE=off
+    if xset -q | grep -q "Caps Lock: *on"; then CAPS_STATE=on; fi
+    echo "$(date +%c): Current caps lock state: $CAPS_STATE" | tee -a $LOG_FILE
+    if [ "$CAPS_STATE" == "on" ]; then toggle_caps; fi
 
     # Send the command to the HipChat window
     xdotool search --name HipChat windowfocus key $COMMAND
+
+    # Put caps lock back, if it was on before
+    if [ "$CAPS_STATE" == "on" ]; then toggle_caps; fi
 }
 
+# Log file location
+LOG_FILE=~/log/lock_screen.log
+
 # When the script is launched, send the /away command and lock the screen
-echo "$(date +%c): Launching"
+echo "$(date +%c): Launching" | tee -a $LOG_FILE
 sleep 0.5
 xdotool getactivewindow windowminimize
 change_hipchat_status away
@@ -51,11 +68,11 @@ while read x; do
     if [ "${x}" = "uint32 0" ]; then
         sleep 0.5
         change_hipchat_status here
-        echo "$(date +%c): Now break out!"
+        echo "$(date +%c): Now break out!" | tee -a $LOG_FILE
         break
     fi
 done < <(dbus-monitor --session "type='signal',interface='org.gnome.SessionManager.Presence',member='StatusChanged'")
 
-echo "$(date +%c): Terminating"
+echo "$(date +%c): Terminating" | tee -a $LOG_FILE
 #read -n1 -r -p "Press any key to continue..." key
 exit 0
